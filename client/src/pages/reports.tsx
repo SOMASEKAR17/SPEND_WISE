@@ -15,8 +15,8 @@ export default function Reports() {
   const [filters, setFilters] = useState({
     fromDate: "",
     toDate: "",
-    bankAccountId: "",
-    category: "",
+    bankAccountId: "all",
+    category: "all",
   });
 
   const { data: bankAccounts } = useQuery<BankAccount[]>({
@@ -39,8 +39,8 @@ export default function Reports() {
 
     if (fromDate && transactionDate < fromDate) return false;
     if (toDate && transactionDate > toDate) return false;
-    if (filters.bankAccountId && transaction.bankAccountId !== filters.bankAccountId) return false;
-    if (filters.category && transaction.expenseCategory.category !== filters.category) return false;
+    if (filters.bankAccountId && filters.bankAccountId !== "all" && transaction.bankAccountId !== filters.bankAccountId) return false;
+    if (filters.category && filters.category !== "all" && transaction.expenseCategory.category !== filters.category) return false;
 
     return true;
   }) || [];
@@ -159,7 +159,7 @@ export default function Reports() {
                     <SelectValue placeholder="All Accounts" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Accounts</SelectItem>
+                    <SelectItem value="all">All Accounts</SelectItem>
                     {bankAccounts?.map((account) => (
                       <SelectItem key={account.id} value={account.id}>
                         {account.accountName}
@@ -178,7 +178,7 @@ export default function Reports() {
                     <SelectValue placeholder="All Categories" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Categories</SelectItem>
+                    <SelectItem value="all">All Categories</SelectItem>
                     {uniqueCategories.map((category) => (
                       <SelectItem key={category} value={category}>
                         {category}
