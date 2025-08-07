@@ -5,9 +5,14 @@ import {
   type InsertExpenseCategory,
   type Transaction,
   type InsertTransaction,
-  type TransactionWithDetails
+  type TransactionWithDetails,
+  bankAccounts,
+  expenseCategories,
+  transactions
 } from "@shared/schema";
 import { randomUUID } from "crypto";
+import { db } from "./db";
+import { eq, sql } from "drizzle-orm";
 
 export interface IStorage {
   // Bank Account operations
@@ -289,4 +294,257 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export class DatabaseStorage implements IStorage {
+  async getBankAccounts(): Promise<BankAccount[]> {
+    return await db.select().from(bankAccounts);
+  }
+
+  async getBankAccount(id: string): Promise<BankAccount | undefined> {
+    const [account] = await db.select().from(bankAccounts).where(eq(bankAccounts.id, id));
+    return account || undefined;
+  }
+
+  async createBankAccount(insertAccount: InsertBankAccount): Promise<BankAccount> {
+    const [account] = await db
+      .insert(bankAccounts)
+      .values(insertAccount)
+      .returning();
+    return account;
+  }
+
+  async updateBankAccount(id: string, updates: Partial<InsertBankAccount>): Promise<BankAccount | undefined> {
+    const [account] = await db
+      .update(bankAccounts)
+      .set(updates)
+      .where(eq(bankAccounts.id, id))
+      .returning();
+    return account || undefined;
+  }
+
+  async deleteBankAccount(id: string): Promise<boolean> {
+    const result = await db.delete(bankAccounts).where(eq(bankAccounts.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  async getExpenseCategories(): Promise<ExpenseCategory[]> {
+    return await db.select().from(expenseCategories);
+  }
+
+  async getExpenseCategory(id: string): Promise<ExpenseCategory | undefined> {
+    const [category] = await db.select().from(expenseCategories).where(eq(expenseCategories.id, id));
+    return category || undefined;
+  }
+
+  async createExpenseCategory(insertCategory: InsertExpenseCategory): Promise<ExpenseCategory> {
+    const [category] = await db
+      .insert(expenseCategories)
+      .values(insertCategory)
+      .returning();
+    return category;
+  }
+
+  async updateExpenseCategory(id: string, updates: Partial<InsertExpenseCategory>): Promise<ExpenseCategory | undefined> {
+    const [category] = await db
+      .update(expenseCategories)
+      .set(updates)
+      .where(eq(expenseCategories.id, id))
+      .returning();
+    return category || undefined;
+  }
+
+  async deleteExpenseCategory(id: string): Promise<boolean> {
+    const result = await db.delete(expenseCategories).where(eq(expenseCategories.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  async getTransactions(): Promise<TransactionWithDetails[]> {
+    const result = await db
+      .select({
+        id: transactions.id,
+        bankAccountId: transactions.bankAccountId,
+        expenseCategoryId: transactions.expenseCategoryId,
+        description: transactions.description,
+        amount: transactions.amount,
+        transactionDate: transactions.transactionDate,
+        createdAt: transactions.createdAt,
+        bankAccount: {
+          id: bankAccounts.id,
+          accountName: bankAccounts.accountName,
+          group: bankAccounts.group,
+          description: bankAccounts.description,
+          createdAt: bankAccounts.createdAt,
+        },
+        expenseCategory: {
+          id: expenseCategories.id,
+          name: expenseCategories.name,
+          group: expenseCategories.group,
+          category: expenseCategories.category,
+          createdAt: expenseCategories.createdAt,
+        },
+      })
+      .from(transactions)
+      .innerJoin(bankAccounts, eq(transactions.bankAccountId, bankAccounts.id))
+      .innerJoin(expenseCategories, eq(transactions.expenseCategoryId, expenseCategories.id))
+      .orderBy(sql`${transactions.transactionDate} DESC`);
+
+    return result;
+  }
+
+  async getTransaction(id: string): Promise<TransactionWithDetails | undefined> {
+    const [result] = await db
+      .select({
+        id: transactions.id,
+        bankAccountId: transactions.bankAccountId,
+        expenseCategoryId: transactions.expenseCategoryId,
+        description: transactions.description,
+        amount: transactions.amount,
+        transactionDate: transactions.transactionDate,
+        createdAt: transactions.createdAt,
+        bankAccount: {
+          id: bankAccounts.id,
+          accountName: bankAccounts.accountName,
+          group: bankAccounts.group,
+          description: bankAccounts.description,
+          createdAt: bankAccounts.createdAt,
+        },
+        expenseCategory: {
+          id: expenseCategories.id,
+          name: expenseCategories.name,
+          group: expenseCategories.group,
+          category: expenseCategories.category,
+          createdAt: expenseCategories.createdAt,
+        },
+      })
+      .from(transactions)
+      .innerJoin(bankAccounts, eq(transactions.bankAccountId, bankAccounts.id))
+      .innerJoin(expenseCategories, eq(transactions.expenseCategoryId, expenseCategories.id))
+      .where(eq(transactions.id, id));
+
+    return result || undefined;
+  }
+
+  async createTransaction(insertTransaction: InsertTransaction): Promise<TransactionWithDetails> {
+    const [transaction] = await db
+      .insert(transactions)
+      .values({
+        ...insertTransaction,
+        transactionDate: new Date(insertTransaction.transactionDate),
+      })
+      .returning();
+
+    const result = await this.getTransaction(transaction.id);
+    return result!;
+  }
+
+  async updateTransaction(id: string, updates: Partial<InsertTransaction>): Promise<TransactionWithDetails | undefined> {
+    const updateData: any = { ...updates };
+    if (updates.transactionDate) {
+      updateData.transactionDate = new Date(updates.transactionDate);
+    }
+
+    const [transaction] = await db
+      .update(transactions)
+      .set(updateData)
+      .where(eq(transactions.id, id))
+      .returning();
+
+    if (!transaction) return undefined;
+
+    return await this.getTransaction(transaction.id);
+  }
+
+  async deleteTransaction(id: string): Promise<boolean> {
+    const result = await db.delete(transactions).where(eq(transactions.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  async getTransactionsByDateRange(startDate: string, endDate: string): Promise<TransactionWithDetails[]> {
+    const result = await db
+      .select({
+        id: transactions.id,
+        bankAccountId: transactions.bankAccountId,
+        expenseCategoryId: transactions.expenseCategoryId,
+        description: transactions.description,
+        amount: transactions.amount,
+        transactionDate: transactions.transactionDate,
+        createdAt: transactions.createdAt,
+        bankAccount: {
+          id: bankAccounts.id,
+          accountName: bankAccounts.accountName,
+          group: bankAccounts.group,
+          description: bankAccounts.description,
+          createdAt: bankAccounts.createdAt,
+        },
+        expenseCategory: {
+          id: expenseCategories.id,
+          name: expenseCategories.name,
+          group: expenseCategories.group,
+          category: expenseCategories.category,
+          createdAt: expenseCategories.createdAt,
+        },
+      })
+      .from(transactions)
+      .innerJoin(bankAccounts, eq(transactions.bankAccountId, bankAccounts.id))
+      .innerJoin(expenseCategories, eq(transactions.expenseCategoryId, expenseCategories.id))
+      .where(sql`${transactions.transactionDate} >= ${startDate} AND ${transactions.transactionDate} <= ${endDate}`)
+      .orderBy(sql`${transactions.transactionDate} DESC`);
+
+    return result;
+  }
+
+  async getCategoryWiseExpenses(): Promise<{ category: string; total: number; count: number }[]> {
+    const result = await db
+      .select({
+        category: expenseCategories.category,
+        total: sql<number>`SUM(CAST(${transactions.amount} AS DECIMAL))`,
+        count: sql<number>`COUNT(*)`,
+      })
+      .from(transactions)
+      .innerJoin(expenseCategories, eq(transactions.expenseCategoryId, expenseCategories.id))
+      .groupBy(expenseCategories.category);
+
+    return result.map(row => ({
+      category: row.category,
+      total: Number(row.total),
+      count: Number(row.count),
+    }));
+  }
+
+  async getMonthlyExpenses(): Promise<{ month: string; total: number; count: number }[]> {
+    const result = await db
+      .select({
+        month: sql<string>`TO_CHAR(${transactions.transactionDate}, 'Mon YYYY')`,
+        total: sql<number>`SUM(CAST(${transactions.amount} AS DECIMAL))`,
+        count: sql<number>`COUNT(*)`,
+      })
+      .from(transactions)
+      .groupBy(sql`TO_CHAR(${transactions.transactionDate}, 'Mon YYYY')`, sql`DATE_TRUNC('month', ${transactions.transactionDate})`)
+      .orderBy(sql`DATE_TRUNC('month', ${transactions.transactionDate})`);
+
+    return result.map(row => ({
+      month: row.month,
+      total: Number(row.total),
+      count: Number(row.count),
+    }));
+  }
+
+  async getBankWiseExpenses(): Promise<{ bankAccount: string; total: number; count: number }[]> {
+    const result = await db
+      .select({
+        bankAccount: bankAccounts.accountName,
+        total: sql<number>`SUM(CAST(${transactions.amount} AS DECIMAL))`,
+        count: sql<number>`COUNT(*)`,
+      })
+      .from(transactions)
+      .innerJoin(bankAccounts, eq(transactions.bankAccountId, bankAccounts.id))
+      .groupBy(bankAccounts.accountName);
+
+    return result.map(row => ({
+      bankAccount: row.bankAccount,
+      total: Number(row.total),
+      count: Number(row.count),
+    }));
+  }
+}
+
+export const storage = new DatabaseStorage();
