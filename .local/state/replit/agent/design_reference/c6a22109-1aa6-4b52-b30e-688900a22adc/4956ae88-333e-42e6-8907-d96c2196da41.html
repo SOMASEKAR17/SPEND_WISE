@@ -1,0 +1,625 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Tracker - Mobile App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif']
+                    },
+                    colors: {
+                        'primary': '#1976D2',
+                        'secondary': '#388E3C',
+                        'accent': '#FF5722',
+                        'surface': '#FAFAFA',
+                        'text-primary': '#333333',
+                        'text-secondary': '#666666',
+                        'border': '#E0E0E0'
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .screen { display: none; }
+        .screen.active { display: block; }
+        .chart-container { position: relative; height: 200px; }
+        .chart-bar { transition: all 0.3s ease; }
+    </style>
+</head>
+<body class="bg-surface font-inter">
+    <!-- @COMPONENT: MobileApp [Main container with bottom navigation] -->
+    <div class="max-w-md mx-auto bg-white min-h-screen relative">
+        
+        <!-- @COMPONENT: DashboardScreen [Main dashboard with summary cards and charts] -->
+        <div id="dashboard" class="screen active">
+            <!-- Header -->
+            <div class="bg-primary text-white p-4 shadow-lg">
+                <div class="flex items-center justify-between">
+                    <h1 class="text-xl font-semibold">Expense Tracker</h1>
+                    <button class="p-2 rounded-full hover:bg-blue-700" data-event="click:showProfile">
+                        <i class="fas fa-user"></i>
+                    </button>
+                </div>
+                
+                <!-- Quick Stats -->
+                <div class="mt-4 grid grid-cols-2 gap-4">
+                    <div class="bg-blue-600 p-3 rounded-lg">
+                        <p class="text-sm opacity-90">This Month</p>
+                        <p class="text-lg font-bold" data-bind="monthlyTotal">₹12,450</p>
+                    </div>
+                    <div class="bg-blue-600 p-3 rounded-lg">
+                        <p class="text-sm opacity-90">Available Balance</p>
+                        <p class="text-lg font-bold" data-bind="availableBalance">₹45,680</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="p-4">
+                <h2 class="text-lg font-semibold text-text-primary mb-4">Expense Overview</h2>
+                
+                <!-- Category Wise Chart -->
+                <div class="bg-white rounded-lg shadow p-4 mb-4">
+                    <h3 class="text-md font-medium mb-3">Category Wise</h3>
+                    <div class="chart-container">
+                        <!-- @FUNCTIONALITY: Implement chart using Chart.js or similar library -->
+                        <div class="flex items-end justify-between h-32 gap-2">
+                            <div class="flex flex-col items-center">
+                                <div class="bg-primary w-8 chart-bar" style="height: 80%"></div>
+                                <span class="text-xs mt-1">Food</span>
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <div class="bg-secondary w-8 chart-bar" style="height: 60%"></div>
+                                <span class="text-xs mt-1">Transport</span>
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <div class="bg-accent w-8 chart-bar" style="height: 40%"></div>
+                                <span class="text-xs mt-1">Shopping</span>
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <div class="bg-yellow-500 w-8 chart-bar" style="height: 30%"></div>
+                                <span class="text-xs mt-1">Bills</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Monthly Trend -->
+                <div class="bg-white rounded-lg shadow p-4 mb-4">
+                    <h3 class="text-md font-medium mb-3">Monthly Trend</h3>
+                    <div class="chart-container">
+                        <div class="flex items-end justify-between h-32 gap-1">
+                            <!-- @MAP: monthlyData.map(month => ( -->
+                            <div class="flex flex-col items-center flex-1">
+                                <div class="bg-primary w-full chart-bar" style="height: 70%"></div>
+                                <span class="text-xs mt-1">Jan</span>
+                            </div>
+                            <div class="flex flex-col items-center flex-1">
+                                <div class="bg-primary w-full chart-bar" style="height: 85%"></div>
+                                <span class="text-xs mt-1">Feb</span>
+                            </div>
+                            <div class="flex flex-col items-center flex-1">
+                                <div class="bg-primary w-full chart-bar" style="height: 90%"></div>
+                                <span class="text-xs mt-1">Mar</span>
+                            </div>
+                            <div class="flex flex-col items-center flex-1">
+                                <div class="bg-primary w-full chart-bar" style="height: 75%"></div>
+                                <span class="text-xs mt-1">Apr</span>
+                            </div>
+                            <!-- @END_MAP )) -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="grid grid-cols-2 gap-4 mb-20">
+                    <button class="bg-white rounded-lg shadow p-4 text-center" data-event="click:showTransactionForm">
+                        <i class="fas fa-plus text-primary text-2xl mb-2"></i>
+                        <p class="text-sm font-medium">Add Transaction</p>
+                    </button>
+                    <button class="bg-white rounded-lg shadow p-4 text-center" data-event="click:showReports">
+                        <i class="fas fa-chart-bar text-secondary text-2xl mb-2"></i>
+                        <p class="text-sm font-medium">View Reports</p>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: DashboardScreen -->
+
+        <!-- @COMPONENT: BankMasterScreen [Bank account creation form] -->
+        <div id="bank-master" class="screen">
+            <div class="bg-primary text-white p-4 shadow-lg">
+                <div class="flex items-center">
+                    <button class="mr-4 p-2 rounded-full hover:bg-blue-700" data-event="click:goBack">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <h1 class="text-xl font-semibold">Bank Account Master</h1>
+                </div>
+            </div>
+
+            <div class="p-4">
+                <form class="space-y-6" data-event="submit:handleBankSubmit">
+                    <div>
+                        <label class="block text-sm font-medium text-text-primary mb-2">Bank Account Name *</label>
+                        <input type="text" 
+                               class="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" 
+                               placeholder="Enter bank account name"
+                               data-bind="bankForm.accountName"
+                               data-mock="true">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-text-primary mb-2">Group *</label>
+                        <select class="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                                data-bind="bankForm.group"
+                                data-mock="true">
+                            <option value="">Select Group</option>
+                            <option value="savings">Savings Account</option>
+                            <option value="current">Current Account</option>
+                            <option value="cash">Cash</option>
+                            <option value="credit">Credit Card</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-text-primary mb-2">Description</label>
+                        <textarea class="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent h-24" 
+                                  placeholder="Enter description (optional)"
+                                  data-bind="bankForm.description"
+                                  data-mock="true"></textarea>
+                    </div>
+
+                    <button type="submit" 
+                            class="w-full bg-primary text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                            data-implementation="Should validate form before submission">
+                        Create Bank Account
+                    </button>
+                </form>
+
+                <!-- Existing Bank Accounts -->
+                <div class="mt-8">
+                    <h2 class="text-lg font-semibold text-text-primary mb-4">Existing Accounts</h2>
+                    <!-- @MAP: bankAccounts.map(account => ( -->
+                    <div class="bg-white rounded-lg shadow p-4 mb-3" data-mock="true">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="font-medium text-text-primary">HDFC Savings</h3>
+                                <p class="text-sm text-text-secondary">Savings Account</p>
+                                <p class="text-xs text-text-secondary mt-1">Primary savings account</p>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button class="p-2 text-primary" data-event="click:editAccount">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="p-2 text-red-500" data-event="click:deleteAccount">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- @END_MAP )) -->
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: BankMasterScreen -->
+
+        <!-- @COMPONENT: ExpenseMasterScreen [Expense category creation form] -->
+        <div id="expense-master" class="screen">
+            <div class="bg-secondary text-white p-4 shadow-lg">
+                <div class="flex items-center">
+                    <button class="mr-4 p-2 rounded-full hover:bg-green-700" data-event="click:goBack">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <h1 class="text-xl font-semibold">Expense Master</h1>
+                </div>
+            </div>
+
+            <div class="p-4">
+                <form class="space-y-6" data-event="submit:handleExpenseSubmit">
+                    <div>
+                        <label class="block text-sm font-medium text-text-primary mb-2">Expense Name *</label>
+                        <input type="text" 
+                               class="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent" 
+                               placeholder="Enter expense name"
+                               data-bind="expenseForm.name"
+                               data-mock="true">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-text-primary mb-2">Expense Group *</label>
+                        <select class="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
+                                data-bind="expenseForm.group"
+                                data-mock="true">
+                            <option value="">Select Group</option>
+                            <option value="necessity">Necessity</option>
+                            <option value="lifestyle">Lifestyle</option>
+                            <option value="investment">Investment</option>
+                            <option value="emergency">Emergency</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-text-primary mb-2">Category *</label>
+                        <select class="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
+                                data-bind="expenseForm.category"
+                                data-mock="true">
+                            <option value="">Select Category</option>
+                            <option value="food">Food & Dining</option>
+                            <option value="transport">Transportation</option>
+                            <option value="shopping">Shopping</option>
+                            <option value="bills">Bills & Utilities</option>
+                            <option value="health">Healthcare</option>
+                            <option value="entertainment">Entertainment</option>
+                            <option value="education">Education</option>
+                            <option value="others">Others</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" 
+                            class="w-full bg-secondary text-white py-3 rounded-lg font-medium hover:bg-green-700 transition-colors"
+                            data-implementation="Should validate form before submission">
+                        Create Expense Category
+                    </button>
+                </form>
+
+                <!-- Existing Expense Categories -->
+                <div class="mt-8">
+                    <h2 class="text-lg font-semibold text-text-primary mb-4">Existing Categories</h2>
+                    <!-- @MAP: expenseCategories.map(category => ( -->
+                    <div class="bg-white rounded-lg shadow p-4 mb-3" data-mock="true">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="font-medium text-text-primary">Restaurant Food</h3>
+                                <p class="text-sm text-text-secondary">Lifestyle • Food & Dining</p>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button class="p-2 text-secondary" data-event="click:editExpense">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="p-2 text-red-500" data-event="click:deleteExpense">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- @END_MAP )) -->
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: ExpenseMasterScreen -->
+
+        <!-- @COMPONENT: TransactionScreen [Transaction entry form] -->
+        <div id="transactions" class="screen">
+            <div class="bg-accent text-white p-4 shadow-lg">
+                <div class="flex items-center">
+                    <button class="mr-4 p-2 rounded-full hover:bg-orange-700" data-event="click:goBack">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <h1 class="text-xl font-semibold">Add Transaction</h1>
+                </div>
+            </div>
+
+            <div class="p-4 pb-24">
+                <form class="space-y-6" data-event="submit:handleTransactionSubmit">
+                    <div>
+                        <label class="block text-sm font-medium text-text-primary mb-2">Bank/Cash Account *</label>
+                        <select class="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
+                                data-bind="transactionForm.bankAccount"
+                                data-mock="true">
+                            <option value="">Select Account</option>
+                            <option value="hdfc-savings">HDFC Savings</option>
+                            <option value="icici-current">ICICI Current</option>
+                            <option value="cash">Cash</option>
+                            <option value="credit-card">Credit Card</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-text-primary mb-2">Expense Name *</label>
+                        <select class="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
+                                data-bind="transactionForm.expenseName"
+                                data-mock="true">
+                            <option value="">Select Expense</option>
+                            <option value="restaurant-food">Restaurant Food</option>
+                            <option value="grocery">Grocery</option>
+                            <option value="fuel">Fuel</option>
+                            <option value="electricity-bill">Electricity Bill</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-text-primary mb-2">Expense Description</label>
+                        <input type="text" 
+                               class="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent" 
+                               placeholder="Enter description"
+                               data-bind="transactionForm.description"
+                               data-mock="true">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-text-primary mb-2">Expense Amount *</label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-3 text-text-secondary">₹</span>
+                            <input type="number" 
+                                   class="w-full p-3 pl-8 border border-border rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent" 
+                                   placeholder="0.00"
+                                   step="0.01"
+                                   data-bind="transactionForm.amount"
+                                   data-mock="true">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-text-primary mb-2">Date *</label>
+                        <input type="date" 
+                               class="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
+                               data-bind="transactionForm.date"
+                               data-mock="true">
+                    </div>
+
+                    <button type="submit" 
+                            class="w-full bg-accent text-white py-3 rounded-lg font-medium hover:bg-orange-700 transition-colors"
+                            data-implementation="Should validate form before submission">
+                        Add Transaction
+                    </button>
+                </form>
+
+                <!-- Recent Transactions -->
+                <div class="mt-8">
+                    <h2 class="text-lg font-semibold text-text-primary mb-4">Recent Transactions</h2>
+                    <!-- @MAP: recentTransactions.map(transaction => ( -->
+                    <div class="bg-white rounded-lg shadow p-4 mb-3" data-mock="true">
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between">
+                                    <h3 class="font-medium text-text-primary">Restaurant Food</h3>
+                                    <span class="text-lg font-semibold text-red-600">-₹450</span>
+                                </div>
+                                <p class="text-sm text-text-secondary">HDFC Savings • Food & Dining</p>
+                                <p class="text-xs text-text-secondary mt-1">Lunch at McDonald's</p>
+                                <p class="text-xs text-text-secondary">Today, 2:30 PM</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- @END_MAP )) -->
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: TransactionScreen -->
+
+        <!-- @COMPONENT: ReportsScreen [Detailed reports with filtering] -->
+        <div id="reports" class="screen">
+            <div class="bg-purple-600 text-white p-4 shadow-lg">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <button class="mr-4 p-2 rounded-full hover:bg-purple-700" data-event="click:goBack">
+                            <i class="fas fa-arrow-left"></i>
+                        </button>
+                        <h1 class="text-xl font-semibold">Reports</h1>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button class="p-2 rounded-full hover:bg-purple-700" data-event="click:exportData">
+                            <i class="fas fa-download"></i>
+                        </button>
+                        <button class="p-2 rounded-full hover:bg-purple-700" data-event="click:shareWhatsApp">
+                            <i class="fab fa-whatsapp"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-4 pb-24">
+                <!-- Filter Section -->
+                <div class="bg-white rounded-lg shadow p-4 mb-6">
+                    <h2 class="text-lg font-semibold text-text-primary mb-4">Filters</h2>
+                    
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium text-text-primary mb-2">From Date</label>
+                            <input type="date" 
+                                   class="w-full p-2 border border-border rounded focus:ring-2 focus:ring-purple-600"
+                                   data-bind="reportFilter.fromDate"
+                                   data-mock="true">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-text-primary mb-2">To Date</label>
+                            <input type="date" 
+                                   class="w-full p-2 border border-border rounded focus:ring-2 focus:ring-purple-600"
+                                   data-bind="reportFilter.toDate"
+                                   data-mock="true">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium text-text-primary mb-2">Bank Account</label>
+                            <select class="w-full p-2 border border-border rounded focus:ring-2 focus:ring-purple-600"
+                                    data-bind="reportFilter.bankAccount"
+                                    data-mock="true">
+                                <option value="">All Accounts</option>
+                                <option value="hdfc-savings">HDFC Savings</option>
+                                <option value="icici-current">ICICI Current</option>
+                                <option value="cash">Cash</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-text-primary mb-2">Category</label>
+                            <select class="w-full p-2 border border-border rounded focus:ring-2 focus:ring-purple-600"
+                                    data-bind="reportFilter.category"
+                                    data-mock="true">
+                                <option value="">All Categories</option>
+                                <option value="food">Food & Dining</option>
+                                <option value="transport">Transportation</option>
+                                <option value="shopping">Shopping</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button class="w-full bg-purple-600 text-white py-2 rounded font-medium hover:bg-purple-700"
+                            data-event="click:applyFilters">
+                        Apply Filters
+                    </button>
+                </div>
+
+                <!-- Summary Cards -->
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div class="bg-white rounded-lg shadow p-4 text-center">
+                        <p class="text-sm text-text-secondary">Total Transactions</p>
+                        <p class="text-2xl font-bold text-text-primary" data-bind="reportSummary.totalTransactions">156</p>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-4 text-center">
+                        <p class="text-sm text-text-secondary">Total Amount</p>
+                        <p class="text-2xl font-bold text-red-600" data-bind="reportSummary.totalAmount">₹45,230</p>
+                    </div>
+                </div>
+
+                <!-- Detailed Report Table -->
+                <div class="bg-white rounded-lg shadow">
+                    <div class="p-4 border-b border-border">
+                        <h2 class="text-lg font-semibold text-text-primary">Transaction Details</h2>
+                    </div>
+                    
+                    <div class="overflow-x-auto">
+                        <!-- @MAP: filteredTransactions.map(transaction => ( -->
+                        <div class="p-4 border-b border-border last:border-b-0" data-mock="true">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <h3 class="font-medium text-text-primary">Restaurant Food</h3>
+                                    <p class="text-sm text-text-secondary">Lifestyle • Food & Dining</p>
+                                </div>
+                                <span class="text-lg font-semibold text-red-600">₹450</span>
+                            </div>
+                            <div class="text-sm text-text-secondary">
+                                <p>HDFC Savings • Lunch at McDonald's</p>
+                                <p>March 15, 2024 at 2:30 PM</p>
+                            </div>
+                        </div>
+                        <!-- @END_MAP )) -->
+                    </div>
+                </div>
+
+                <!-- Export Options -->
+                <div class="mt-6 bg-white rounded-lg shadow p-4">
+                    <h2 class="text-lg font-semibold text-text-primary mb-4">Export Options</h2>
+                    <div class="grid grid-cols-2 gap-4">
+                        <button class="bg-green-600 text-white py-3 rounded-lg font-medium hover:bg-green-700 flex items-center justify-center"
+                                data-event="click:exportExcel"
+                                data-implementation="Should generate Excel file with filtered data">
+                            <i class="fas fa-file-excel mr-2"></i>
+                            Export Excel
+                        </button>
+                        <button class="bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 flex items-center justify-center"
+                                data-event="click:exportCSV"
+                                data-implementation="Should generate CSV file with filtered data">
+                            <i class="fas fa-file-csv mr-2"></i>
+                            Export CSV
+                        </button>
+                    </div>
+                    <button class="w-full mt-3 bg-green-500 text-white py-3 rounded-lg font-medium hover:bg-green-600 flex items-center justify-center"
+                            data-event="click:shareWhatsApp"
+                            data-implementation="Should format data and open WhatsApp share">
+                        <i class="fab fa-whatsapp mr-2"></i>
+                        Share on WhatsApp
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: ReportsScreen -->
+
+        <!-- @COMPONENT: BottomNavigation [Fixed bottom navigation bar] -->
+        <div class="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-md bg-white border-t border-border">
+            <div class="grid grid-cols-5 h-16">
+                <button class="flex flex-col items-center justify-center text-primary" 
+                        data-event="click:showScreen" data-target="dashboard">
+                    <i class="fas fa-home text-lg"></i>
+                    <span class="text-xs mt-1">Home</span>
+                </button>
+                <button class="flex flex-col items-center justify-center text-text-secondary hover:text-primary" 
+                        data-event="click:showScreen" data-target="bank-master">
+                    <i class="fas fa-university text-lg"></i>
+                    <span class="text-xs mt-1">Banks</span>
+                </button>
+                <button class="flex flex-col items-center justify-center text-text-secondary hover:text-primary" 
+                        data-event="click:showScreen" data-target="transactions">
+                    <i class="fas fa-plus-circle text-2xl"></i>
+                </button>
+                <button class="flex flex-col items-center justify-center text-text-secondary hover:text-primary" 
+                        data-event="click:showScreen" data-target="expense-master">
+                    <i class="fas fa-tags text-lg"></i>
+                    <span class="text-xs mt-1">Expenses</span>
+                </button>
+                <button class="flex flex-col items-center justify-center text-text-secondary hover:text-primary" 
+                        data-event="click:showScreen" data-target="reports">
+                    <i class="fas fa-chart-line text-lg"></i>
+                    <span class="text-xs mt-1">Reports</span>
+                </button>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: BottomNavigation -->
+    </div>
+    <!-- @END_COMPONENT: MobileApp -->
+
+    <script>
+        // @STATE: currentScreen:string = 'dashboard'
+        // @STATE: bankAccounts:array = []
+        // @STATE: expenseCategories:array = []
+        // @STATE: transactions:array = []
+        
+        (function() {
+            // Simple screen navigation
+            function showScreen(screenId) {
+                document.querySelectorAll('.screen').forEach(screen => {
+                    screen.classList.remove('active');
+                });
+                document.getElementById(screenId).classList.add('active');
+                
+                // Update navigation state
+                document.querySelectorAll('[data-target]').forEach(btn => {
+                    btn.classList.remove('text-primary');
+                    btn.classList.add('text-text-secondary');
+                });
+                document.querySelector(`[data-target="${screenId}"]`)?.classList.add('text-primary');
+            }
+
+            // Navigation event handlers
+            document.addEventListener('click', function(e) {
+                const target = e.target.closest('[data-event*="showScreen"]');
+                if (target && target.dataset.target) {
+                    showScreen(target.dataset.target);
+                }
+                
+                // Back button handler
+                if (e.target.closest('[data-event*="goBack"]')) {
+                    showScreen('dashboard');
+                }
+                
+                // Quick action handlers
+                if (e.target.closest('[data-event*="showTransactionForm"]')) {
+                    showScreen('transactions');
+                }
+                
+                if (e.target.closest('[data-event*="showReports"]')) {
+                    showScreen('reports');
+                }
+            });
+
+            // TODO: Implement form validation and submission handlers
+            // TODO: Implement data persistence with local storage or API
+            // TODO: Implement chart rendering with Chart.js
+            // TODO: Implement export functionality (Excel/CSV)
+            // TODO: Implement WhatsApp sharing with Web Share API
+            // TODO: Implement filtering logic for reports
+            // TODO: Add loading states and error handling
+            // TODO: Implement offline capability with service workers
+        })();
+    </script>
+</body>
+</html>
